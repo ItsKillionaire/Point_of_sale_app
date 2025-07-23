@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/killionaire/Documents/Projects/point_of_sale/pizzapopan_pos/build/linux/x64/debug/cmake_install.cmake",
+		"/home/killionaire/Documents/Projects/point_of_sale/pizzapopan_pos/build/linux/x64/debug/flutter/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
