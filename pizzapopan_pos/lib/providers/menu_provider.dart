@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:pizzapopan_pos/models/ingredient.dart';
 import 'package:pizzapopan_pos/models/product.dart';
 import 'package:pizzapopan_pos/models/product_category.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MenuProvider with ChangeNotifier {
   static const double pizzaPrice = 110.00;
@@ -12,9 +13,28 @@ class MenuProvider with ChangeNotifier {
 
   List<Product> _menuItems = [];
   List<Ingredient> _pizzaIngredients = [];
+  double _itemSize = 180.0;
 
   List<Product> get menuItems => _menuItems;
   List<Ingredient> get pizzaIngredients => _pizzaIngredients;
+  double get itemSize => _itemSize;
+
+  MenuProvider() {
+    _loadItemSize();
+  }
+
+  Future<void> _loadItemSize() async {
+    final prefs = await SharedPreferences.getInstance();
+    _itemSize = prefs.getDouble('itemSize') ?? 180.0;
+    notifyListeners();
+  }
+
+  Future<void> setItemSize(double size) async {
+    final prefs = await SharedPreferences.getInstance();
+    _itemSize = size;
+    await prefs.setDouble('itemSize', size);
+    notifyListeners();
+  }
 
   Future<void> loadMenu() async {
     final String response = await rootBundle.loadString('assets/menu.json');

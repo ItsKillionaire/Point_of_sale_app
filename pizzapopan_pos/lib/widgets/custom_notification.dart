@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 void showCustomNotification(BuildContext context, String message, {bool isError = false}) {
-  final overlay = Overlay.of(context)!;
-  final overlayEntry = OverlayEntry(
+  late OverlayEntry overlayEntry;
+  overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
       top: MediaQuery.of(context).size.height * 0.5 - 50, // Centered
       left: MediaQuery.of(context).size.width * 0.25,
@@ -10,7 +10,9 @@ void showCustomNotification(BuildContext context, String message, {bool isError 
       child: Material(
         color: Colors.transparent,
         child: GestureDetector(
-          onTap: () {},
+          onTap: () {
+            overlayEntry.remove();
+          },
           child: Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -28,7 +30,7 @@ void showCustomNotification(BuildContext context, String message, {bool isError 
     ),
   );
 
-  overlay.insert(overlayEntry);
+  Overlay.of(context)!.insert(overlayEntry);
 
   Future.delayed(const Duration(seconds: 2), () {
     overlayEntry.remove();

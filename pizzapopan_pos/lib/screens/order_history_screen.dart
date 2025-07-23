@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pizzapopan_pos/models/custom_pizza.dart';
+import 'package:pizzapopan_pos/models/product_category.dart';
 import 'package:pizzapopan_pos/providers/order_history_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +20,17 @@ class OrderHistoryScreen extends StatelessWidget {
         itemCount: orderHistoryProvider.orders.length,
         itemBuilder: (context, index) {
           final order = orderHistoryProvider.orders[index];
+          // Sort items by category
+          order.items.sort((a, b) {
+            final categoryOrder = {
+              ProductCategory.pizzas: 0,
+              ProductCategory.boneless: 1,
+              ProductCategory.bebidas: 2,
+              ProductCategory.extras: 3,
+            };
+            return categoryOrder[a.product.category]! - categoryOrder[b.product.category]!;
+          });
+
           return Card(
             margin: const EdgeInsets.all(8.0),
             child: Padding(
@@ -38,32 +50,42 @@ class OrderHistoryScreen extends StatelessWidget {
                   if (order.isPickup)
                     const Text('Tipo: Pickup'),
                   const Divider(thickness: 1.5),
-                  ...order.items.map((item) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(item.product.name, overflow: TextOverflow.ellipsis, maxLines: 2),
-                                if (item.product is CustomPizza)
-                                  Text((item.product as CustomPizza).description, style: const TextStyle(fontSize: 12)),
-                              ],
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: order.items.length,
+                    separatorBuilder: (context, itemIndex) => const Divider(height: 1, indent: 16, endIndent: 16),
+                    itemBuilder: (context, itemIndex) {
+                      final item = order.items[itemIndex];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item.product.name, overflow: TextOverflow.ellipsis, maxLines: 2),
+                                  if (item.product is CustomPizza)
+                                    Text((item.product as CustomPizza).description, style: const TextStyle(fontSize: 12)),
+                                ],
+                              ),
                             ),
-                          ),
-                          Text('${item.quantity}', style: const TextStyle(fontSize: 16)),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                            Text(
+                              '${item.quantity}',
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                   const Divider(thickness: 1.5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'Total: ${order.totalPrice.toStringAsFixed(2)}',
+                        'Total: \$${order.totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],

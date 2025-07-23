@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pizzapopan_pos/models/custom_pizza.dart';
 import 'package:pizzapopan_pos/models/ingredient.dart';
 import 'package:pizzapopan_pos/models/order.dart';
@@ -25,8 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
   String? _address;
   bool _isPickup = false;
-
-  
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -43,10 +43,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  double _getFontSize(double baseSize) {
+    return baseSize.sp.clamp(14.0, 22.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final billProvider = Provider.of<BillProvider>(context);
-    final orderHistoryProvider = Provider.of<OrderHistoryProvider>(context, listen: false);
+    final orderHistoryProvider =
+        Provider.of<OrderHistoryProvider>(context, listen: false);
 
     return Scaffold(
       body: Container(
@@ -56,38 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
             fit: BoxFit.cover,
           ),
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth > 600) {
-              // Wide screen layout
-              return Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: _buildBillPanel(billProvider, orderHistoryProvider),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: _buildMenuPanel(),
-                  ),
-                ],
-              );
-            } else {
-              // Narrow screen layout
-              return Column(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: _buildBillPanel(billProvider, orderHistoryProvider),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: _buildMenuPanel(),
-                  ),
-                ],
-              );
-            }
-          },
+        child: Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: _buildBillPanel(billProvider, orderHistoryProvider),
+            ),
+            Expanded(
+              flex: 5,
+              child: _buildMenuPanel(),
+            ),
+          ],
         ),
       ),
     );
@@ -99,7 +83,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final filteredItems = menuProvider.menuItems
             .where((item) =>
                 item.category == _selectedCategory &&
-                item.name.toLowerCase().contains(_searchController.text.toLowerCase()))
+                item.name
+                    .toLowerCase()
+                    .contains(_searchController.text.toLowerCase()))
             .toList();
 
         return Column(
@@ -110,126 +96,142 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
                     child: ElevatedButton(
-                      onPressed: () => setState(() => _selectedCategory = ProductCategory.pizzas),
+                      onPressed: () =>
+                          setState(() => _selectedCategory = ProductCategory.pizzas),
                       child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: const Text('Pizzas', maxLines: 1),
+                        fit: BoxFit.contain,
+                        child: Text('Pizzas', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
                       ),
                     ),
                   ),
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
                     child: ElevatedButton(
-                      onPressed: () => setState(() => _selectedCategory = ProductCategory.boneless),
+                      onPressed: () =>
+                          setState(() => _selectedCategory = ProductCategory.boneless),
                       child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: const Text('Boneless', maxLines: 1),
+                        fit: BoxFit.contain,
+                        child: Text('Boneless', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
                       ),
                     ),
                   ),
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
                     child: ElevatedButton(
-                      onPressed: () => setState(() => _selectedCategory = ProductCategory.bebidas),
+                      onPressed: () =>
+                          setState(() => _selectedCategory = ProductCategory.bebidas),
                       child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: const Text('Bebidas', maxLines: 1),
+                        fit: BoxFit.contain,
+                        child: Text('Bebidas', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
                       ),
                     ),
                   ),
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
                     child: ElevatedButton(
-                      onPressed: () => setState(() => _selectedCategory = ProductCategory.extras),
+                      onPressed: () =>
+                          setState(() => _selectedCategory = ProductCategory.extras),
                       child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: const Text('Extras', maxLines: 1),
+                        fit: BoxFit.contain,
+                        child: Text('Extras', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
                       ),
                     ),
                   ),
                 ),
+                Flexible(child: _buildSearchWidget()),
               ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: const InputDecoration(
-                  labelText: 'Buscar',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
-                ),
-              ),
             ),
             // Menu items
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 0.8,
-                ),
-                itemCount: filteredItems.length,
-                itemBuilder: (context, index) {
-                  final product = filteredItems[index];
-                  return GestureDetector(
-                    onTap: () async {
-                      if (product.name == 'Al gusto') {
-                        final selectedIngredients = await showDialog<List<Ingredient>>(
-                          context: context,
-                          builder: (context) => const IngredientDialog(),
-                        );
-                        if (selectedIngredients != null && selectedIngredients.isNotEmpty) {
-                          final customPizza = CustomPizza(
-                            name: 'Al gusto',
-                            description: selectedIngredients.map((i) => i.name).join(', '),
-                            price: product.price,
-                            image: product.image,
-                            category: product.category,
-                            ingredients: selectedIngredients,
+              child: LayoutBuilder(builder: (context, constraints) {
+                final crossAxisCount = (constraints.maxWidth / menuProvider.itemSize).floor();
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemCount: filteredItems.length,
+                  itemBuilder: (context, index) {
+                    final product = filteredItems[index];
+                    return GestureDetector(
+                      onTap: () async {
+                        if (product.name == 'Al gusto') {
+                          final selectedIngredients =
+                              await showDialog<List<Ingredient>>(
+                            context: context,
+                            builder: (context) => const IngredientDialog(),
                           );
-                          Provider.of<BillProvider>(context, listen: false).addItem(customPizza);
+                          if (selectedIngredients != null &&
+                              selectedIngredients.isNotEmpty) {
+                            final customPizza = CustomPizza(
+                              name: 'Al gusto',
+                              description: selectedIngredients
+                                  .map((i) => i.name)
+                                  .join(', '),
+                              price: product.price,
+                              image: product.image,
+                              category: product.category,
+                              ingredients: selectedIngredients,
+                            );
+                            Provider.of<BillProvider>(context, listen: false)
+                                .addItem(customPizza);
+                          }
+                        } else {
+                          Provider.of<BillProvider>(context, listen: false)
+                              .addItem(product);
                         }
-                      } else {
-                        Provider.of<BillProvider>(context, listen: false).addItem(product);
-                      }
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: Image.asset(
-                              product.image,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
+                      },
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Image.asset(
+                                product.image,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                              ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Text(product.name, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, maxLines: 2),
-                          ),
-                          Text('\$${product.price.toStringAsFixed(2)}'),
-                        ],
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(product.name,
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  style: TextStyle(fontSize: _getFontSize(16))),
+                            ),
+                            Text('\$${product.price.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                    fontSize: _getFontSize(16),
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                    );
+                  },
+                );
+              }),
+            ),
+            Slider(
+              value: menuProvider.itemSize,
+              min: 120,
+              max: 300,
+              divisions: 6,
+              label: menuProvider.itemSize.round().toString(),
+              onChanged: (double value) {
+                menuProvider.setItemSize(value);
+              },
             ),
           ],
         );
@@ -237,7 +239,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBillPanel(BillProvider billProvider, OrderHistoryProvider orderHistoryProvider) {
+  Widget _buildSearchWidget() {
+    return _isSearching
+        ? Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.w),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Buscar',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      setState(() {
+                        _isSearching = false;
+                        _searchController.clear();
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ),
+          )
+        : IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              setState(() {
+                _isSearching = true;
+              });
+            },
+          );
+  }
+
+  Widget _buildBillPanel(
+      BillProvider billProvider, OrderHistoryProvider orderHistoryProvider) {
     return Container(
       color: Colors.white.withOpacity(0.8),
       child: Column(
@@ -250,42 +288,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const OrderHistoryScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const OrderHistoryScreen()),
                   );
                 },
               ),
-              const Text(
+              Text(
                 'Cuenta',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: _getFontSize(24), fontWeight: FontWeight.bold),
               ),
-              SizedBox(width: 48), // To balance the row with the IconButton
+              SizedBox(width: 48.w), // To balance the row with the IconButton
             ],
           ),
           Expanded(
             child: ListView.separated(
               itemCount: billProvider.items.length,
-              separatorBuilder: (context, index) => const Divider(thickness: 1.5),
+              separatorBuilder: (context, index) =>
+                  const Divider(thickness: 1.5),
               itemBuilder: (context, index) {
                 final item = billProvider.items[index];
                 return GestureDetector(
                   onTap: () => billProvider.removeItem(item),
                   onLongPress: () => billProvider.removeItemCompletely(item),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16.w, vertical: 8.h),
                     child: Row(
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(item.product.name, overflow: TextOverflow.ellipsis, maxLines: 2),
+                              Text(item.product.name,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  style: TextStyle(fontSize: _getFontSize(16))),
                               if (item.product is CustomPizza)
-                                Text((item.product as CustomPizza).description, style: const TextStyle(fontSize: 12)),
+                                Text(
+                                    (item.product as CustomPizza).description,
+                                    style: TextStyle(fontSize: _getFontSize(12))),
                             ],
                           ),
                         ),
                         SizedBox(
-                          width: 100, // Adjust width as needed
+                          width: 100.w, // Adjust width as needed
                           child: Align(
                             alignment: Alignment.centerRight,
                             child: Text.rich(
@@ -296,10 +342,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: _getQuantityColor(item.quantity),
+                                      fontSize: _getFontSize(16),
                                     ),
                                   ),
-                                  const TextSpan(text: ' x '),
-                                  TextSpan(text: '\$${item.totalPrice.toStringAsFixed(2)}'),
+                                  TextSpan(
+                                      text: ' x ',
+                                      style: TextStyle(fontSize: _getFontSize(16))),
+                                  TextSpan(
+                                      text:
+                                          '\$${item.totalPrice.toStringAsFixed(2)}',
+                                      style: TextStyle(fontSize: _getFontSize(16))),
                                 ],
                               ),
                             ),
@@ -320,26 +372,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Artículos:',
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: _getFontSize(16)),
                     ),
                     Text(
                       '${billProvider.totalItems}',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: _getFontSize(16)),
                     ),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Total:',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: _getFontSize(20), fontWeight: FontWeight.bold),
                     ),
                     Text(
                       '\$${billProvider.totalPrice.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: _getFontSize(20), fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -351,10 +405,11 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  padding: EdgeInsets.symmetric(horizontal: 4.w),
                   child: ElevatedButton(
                     onPressed: () async {
-                      final result = await showDialog<Map<String, dynamic>>(
+                      final result =
+                          await showDialog<Map<String, dynamic>>(
                         context: context,
                         builder: (context) => AddressDialog(),
                       );
@@ -366,24 +421,29 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: (_address != null || _isPickup) ? Colors.green : null,
-                      minimumSize: const Size.fromHeight(60), // Make button taller
+                      backgroundColor:
+                          (_address != null || _isPickup) ? Colors.green : null,
+                      minimumSize: Size.fromHeight(60.h), // Make button taller
                     ),
                     child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.center,
-                      child: const Text('Dirección', textAlign: TextAlign.center, maxLines: 1),
+                      fit: BoxFit.contain,
+                      child: Text('Dirección',
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          style: TextStyle(fontSize: _getFontSize(16))),
                     ),
                   ),
                 ),
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  padding: EdgeInsets.symmetric(horizontal: 4.w),
                   child: ElevatedButton(
                     onPressed: () {
                       if (_address == null && !_isPickup) {
-                        showCustomNotification(context, 'Favor de agregar dirección', isError: true);
+                        showCustomNotification(
+                            context, 'Favor de agregar dirección',
+                            isError: true);
                         // TODO: Add flickering animation to the address button
                       } else if (billProvider.items.isNotEmpty) {
                         final order = Order(
@@ -407,16 +467,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           _isPickup = false;
                         });
 
-                        showCustomNotification(context, 'Orden guardada e impresa (simulado).');
+                        showCustomNotification(
+                            context, 'Orden guardada e impresa (simulado).');
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(60), // Make button taller
+                      minimumSize: Size.fromHeight(60.h), // Make button taller
                     ),
                     child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.center,
-                      child: const Text('Imprimir', textAlign: TextAlign.center, maxLines: 1),
+                      fit: BoxFit.contain,
+                      child: Text('Imprimir',
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          style: TextStyle(fontSize: _getFontSize(16))),
                     ),
                   ),
                 ),
@@ -479,7 +542,7 @@ class _AddressDialogState extends State<AddressDialog> {
             enabled: !_isPickup,
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: EdgeInsets.only(top: 8.0.h),
             child: CheckboxListTile(
               title: const Text('Pickup'),
               value: _isPickup,
