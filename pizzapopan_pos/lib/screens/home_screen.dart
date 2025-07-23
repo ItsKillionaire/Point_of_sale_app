@@ -211,6 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         FloatingActionButton(
+                          heroTag: "btn1",
                           onPressed: () {
                             menuProvider.setItemSize(menuProvider.itemSize + 10);
                           },
@@ -218,6 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 10),
                         FloatingActionButton(
+                          heroTag: "btn2",
                           onPressed: () {
                             menuProvider.setItemSize(menuProvider.itemSize - 10);
                           },

@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class MenuProvider with ChangeNotifier {
   static const double pizzaPrice = 110.00;
   static const double bonelessPrice = 110.00;
+  static const double minItemSize = 100.0; // Define minimum item size
+  static const double maxItemSize = 400.0; // Define maximum item size
 
   List<Product> _menuItems = [];
   List<Ingredient> _pizzaIngredients = [];
@@ -26,13 +28,15 @@ class MenuProvider with ChangeNotifier {
   Future<void> _loadItemSize() async {
     final prefs = await SharedPreferences.getInstance();
     _itemSize = prefs.getDouble('itemSize') ?? 180.0;
+    // Ensure loaded size is within bounds
+    _itemSize = _itemSize.clamp(minItemSize, maxItemSize);
     notifyListeners();
   }
 
   Future<void> setItemSize(double size) async {
     final prefs = await SharedPreferences.getInstance();
-    _itemSize = size;
-    await prefs.setDouble('itemSize', size);
+    _itemSize = size.clamp(minItemSize, maxItemSize); // Clamp the new size
+    await prefs.setDouble('itemSize', _itemSize);
     notifyListeners();
   }
 
