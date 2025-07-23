@@ -102,24 +102,60 @@ class _HomeScreenState extends State<HomeScreen> {
         return Column(
           children: [
             // Category buttons
-            Wrap(
-              alignment: WrapAlignment.spaceEvenly,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: () => setState(() => _selectedCategory = ProductCategory.pizzas),
-                  child: const Text('Pizzas'),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ElevatedButton(
+                      onPressed: () => setState(() => _selectedCategory = ProductCategory.pizzas),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: const Text('Pizzas', maxLines: 1),
+                      ),
+                    ),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () => setState(() => _selectedCategory = ProductCategory.boneless),
-                  child: const Text('Boneless'),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ElevatedButton(
+                      onPressed: () => setState(() => _selectedCategory = ProductCategory.boneless),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: const Text('Boneless', maxLines: 1),
+                      ),
+                    ),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () => setState(() => _selectedCategory = ProductCategory.bebidas),
-                  child: const Text('Bebidas'),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ElevatedButton(
+                      onPressed: () => setState(() => _selectedCategory = ProductCategory.bebidas),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: const Text('Bebidas', maxLines: 1),
+                      ),
+                    ),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () => setState(() => _selectedCategory = ProductCategory.extras),
-                  child: const Text('Extras'),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ElevatedButton(
+                      onPressed: () => setState(() => _selectedCategory = ProductCategory.extras),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: const Text('Extras', maxLines: 1),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -204,12 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Cuenta',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
               IconButton(
                 icon: const Icon(Icons.history),
                 onPressed: () {
@@ -219,6 +250,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
+              const Expanded(
+                child: Text(
+                  'Cuenta',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              ),
+              // Empty SizedBox to balance the row if needed, or remove if not necessary
+              SizedBox(width: 48), // Adjust width to match IconButton's width
             ],
           ),
           Expanded(
@@ -258,64 +298,68 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ElevatedButton(
-                onPressed: () async {
-                  final result = await showDialog<Map<String, dynamic>>(
-                    context: context,
-                    builder: (context) => const AddressDialog(),
-                  );
-                  if (result != null) {
-                    setState(() {
-                      _address = result['address'];
-                      _isPickup = result['isPickup'];
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: (_address != null || _isPickup) ? Colors.green : null,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.center,
+                    child: const Text('Dirección', textAlign: TextAlign.center, maxLines: 1),
+                  ),
                 ),
-                child: const Text('Dirección'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_address == null && !_isPickup) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Favor de agregar dirección'),
-                      ),
-                    );
-                    // TODO: Add flickering animation to the address button
-                  } else if (billProvider.items.isNotEmpty) {
-                    final order = Order(
-                      id: DateTime.now().toIso8601String(),
-                      items: billProvider.items.map((orderItem) {
-                        return OrderItem(
-                          product: orderItem.product,
-                          quantity: orderItem.quantity,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_address == null && !_isPickup) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Favor de agregar dirección'),
+                          ),
                         );
-                      }).toList(),
-                      totalPrice: billProvider.totalPrice,
-                      date: DateTime.now(),
-                      address: _address,
-                      isPickup: _isPickup,
-                    );
+                        // TODO: Add flickering animation to the address button
+                      } else if (billProvider.items.isNotEmpty) {
+                        final order = Order(
+                          id: DateTime.now().toIso8601String(),
+                          items: billProvider.items.map((orderItem) {
+                            return OrderItem(
+                              product: orderItem.product,
+                              quantity: orderItem.quantity,
+                            );
+                          }).toList(),
+                          totalPrice: billProvider.totalPrice,
+                          date: DateTime.now(),
+                          address: _address,
+                          isPickup: _isPickup,
+                        );
 
-                    orderHistoryProvider.addOrder(order);
-                    billProvider.clearBill();
-                    setState(() {
-                      _address = null;
-                      _isPickup = false;
-                    });
+                        orderHistoryProvider.addOrder(order);
+                        billProvider.clearBill();
+                        setState(() {
+                          _address = null;
+                          _isPickup = false;
+                        });
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Orden guardada e impresa (simulado).'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Imprimir'),
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Orden guardada e impresa (simulado).'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(60), // Make button taller
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: const Text('Imprimir', textAlign: TextAlign.center, maxLines: 1),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
