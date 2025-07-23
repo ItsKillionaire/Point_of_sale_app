@@ -12,6 +12,7 @@ import 'package:pizzapopan_pos/providers/order_history_provider.dart';
 import 'package:pizzapopan_pos/screens/order_history_screen.dart';
 import 'package:pizzapopan_pos/widgets/custom_notification.dart';
 import 'package:pizzapopan_pos/widgets/ingredient_dialog.dart';
+import 'package:pizzapopan_pos/widgets/split_view.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -61,17 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
             fit: BoxFit.cover,
           ),
         ),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: _buildBillPanel(billProvider, orderHistoryProvider),
-            ),
-            Expanded(
-              flex: 5,
-              child: _buildMenuPanel(),
-            ),
-          ],
+        child: SplitView(
+          left: _buildBillPanel(billProvider, orderHistoryProvider),
+          right: _buildMenuPanel(),
         ),
       ),
     );
@@ -100,10 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ElevatedButton(
                       onPressed: () =>
                           setState(() => _selectedCategory = ProductCategory.pizzas),
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: Text('Pizzas', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
-                      ),
+                      child: Icon(Icons.local_pizza, size: _getFontSize(30)),
                     ),
                   ),
                 ),
@@ -113,10 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ElevatedButton(
                       onPressed: () =>
                           setState(() => _selectedCategory = ProductCategory.boneless),
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: Text('Boneless', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
-                      ),
+                      child: Icon(Icons.fastfood, size: _getFontSize(30)),
                     ),
                   ),
                 ),
@@ -126,10 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ElevatedButton(
                       onPressed: () =>
                           setState(() => _selectedCategory = ProductCategory.bebidas),
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: Text('Bebidas', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
-                      ),
+                      child: Icon(Icons.local_bar, size: _getFontSize(30)),
                     ),
                   ),
                 ),
@@ -139,10 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ElevatedButton(
                       onPressed: () =>
                           setState(() => _selectedCategory = ProductCategory.extras),
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: Text('Extras', maxLines: 1, style: TextStyle(fontSize: _getFontSize(16))),
-                      ),
+                      child: Icon(Icons.add, size: _getFontSize(30)),
                     ),
                   ),
                 ),
@@ -227,8 +208,6 @@ class _HomeScreenState extends State<HomeScreen> {
               value: menuProvider.itemSize,
               min: 120,
               max: 300,
-              divisions: 6,
-              label: menuProvider.itemSize.round().toString(),
               onChanged: (double value) {
                 menuProvider.setItemSize(value);
               },
@@ -295,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Text(
                 'Cuenta',
-                style: TextStyle(fontSize: _getFontSize(24), fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: _getFontSize(30), fontWeight: FontWeight.bold),
               ),
               SizedBox(width: 48.w), // To balance the row with the IconButton
             ],
@@ -406,31 +385,27 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final result =
-                          await showDialog<Map<String, dynamic>>(
-                        context: context,
-                        builder: (context) => AddressDialog(),
-                      );
-                      if (result != null) {
-                        setState(() {
-                          _address = result['address'];
-                          _isPickup = result['isPickup'];
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          (_address != null || _isPickup) ? Colors.green : null,
-                      minimumSize: Size.fromHeight(60.h), // Make button taller
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: Text('Dirección',
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          style: TextStyle(fontSize: _getFontSize(16))),
+                  child: SizedBox(
+                    height: 60.h,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final result =
+                            await showDialog<Map<String, dynamic>>(
+                          context: context,
+                          builder: (context) => AddressDialog(),
+                        );
+                        if (result != null) {
+                          setState(() {
+                            _address = result['address'];
+                            _isPickup = result['isPickup'];
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            (_address != null || _isPickup) ? Colors.green : null,
+                      ),
+                      child: Icon(Icons.delivery_dining, size: _getFontSize(30)),
                     ),
                   ),
                 ),
@@ -438,48 +413,42 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_address == null && !_isPickup) {
-                        showCustomNotification(
-                            context, 'Favor de agregar dirección',
-                            isError: true);
-                        // TODO: Add flickering animation to the address button
-                      } else if (billProvider.items.isNotEmpty) {
-                        final order = Order(
-                          id: orderHistoryProvider.getNextOrderId(),
-                          items: billProvider.items.map((orderItem) {
-                            return OrderItem(
-                              product: orderItem.product,
-                              quantity: orderItem.quantity,
-                            );
-                          }).toList(),
-                          totalPrice: billProvider.totalPrice,
-                          date: DateTime.now(),
-                          address: _address,
-                          isPickup: _isPickup,
-                        );
+                  child: SizedBox(
+                    height: 60.h,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_address == null && !_isPickup) {
+                          showCustomNotification(
+                              context, 'Favor de agregar dirección',
+                              isError: true);
+                          // TODO: Add flickering animation to the address button
+                        } else if (billProvider.items.isNotEmpty) {
+                          final order = Order(
+                            id: orderHistoryProvider.getNextOrderId(),
+                            items: billProvider.items.map((orderItem) {
+                              return OrderItem(
+                                product: orderItem.product,
+                                quantity: orderItem.quantity,
+                              );
+                            }).toList(),
+                            totalPrice: billProvider.totalPrice,
+                            date: DateTime.now(),
+                            address: _address,
+                            isPickup: _isPickup,
+                          );
 
-                        orderHistoryProvider.addOrder(order);
-                        billProvider.clearBill();
-                        setState(() {
-                          _address = null;
-                          _isPickup = false;
-                        });
+                          orderHistoryProvider.addOrder(order);
+                          billProvider.clearBill();
+                          setState(() {
+                            _address = null;
+                            _isPickup = false;
+                          });
 
-                        showCustomNotification(
-                            context, 'Orden guardada e impresa (simulado).');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: Size.fromHeight(60.h), // Make button taller
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: Text('Imprimir',
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          style: TextStyle(fontSize: _getFontSize(16))),
+                          showCustomNotification(
+                              context, 'Orden guardada e impresa (simulado).');
+                        }
+                      },
+                      child: Icon(Icons.print, size: _getFontSize(30)),
                     ),
                   ),
                 ),
