@@ -263,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: ListView.separated(
               itemCount: billProvider.items.length,
-              separatorBuilder: (context, index) => const Divider(),
+              separatorBuilder: (context, index) => const Divider(thickness: 1.5),
               itemBuilder: (context, index) {
                 final item = billProvider.items[index];
                 return GestureDetector(
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
-          const Divider(),
+          const Divider(thickness: 1.5),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -355,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () async {
                       final result = await showDialog<Map<String, dynamic>>(
                         context: context,
-                        builder: (context) => const AddressDialog(),
+                        builder: (context) => AddressDialog(),
                       );
                       if (result != null) {
                         setState(() {
@@ -385,6 +385,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Favor de agregar dirección'),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
                           ),
                         );
                         // TODO: Add flickering animation to the address button
@@ -413,6 +415,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Orden guardada e impresa (simulado).'),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -459,6 +463,17 @@ class AddressDialog extends StatefulWidget {
 class _AddressDialogState extends State<AddressDialog> {
   final _addressController = TextEditingController();
   bool _isPickup = false;
+  bool _canSave = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _addressController.addListener(() {
+      setState(() {
+        _canSave = _addressController.text.isNotEmpty || _isPickup;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -483,6 +498,7 @@ class _AddressDialogState extends State<AddressDialog> {
               onChanged: (value) {
                 setState(() {
                   _isPickup = value!;
+                  _canSave = _addressController.text.isNotEmpty || _isPickup;
                 });
               },
             ),
@@ -495,12 +511,14 @@ class _AddressDialogState extends State<AddressDialog> {
           child: const Text('Cancelar'),
         ),
         ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context, {
-              'address': _addressController.text,
-              'isPickup': _isPickup,
-            });
-          },
+          onPressed: _canSave
+              ? () {
+                  Navigator.pop(context, {
+                    'address': _addressController.text,
+                    'isPickup': _isPickup,
+                  });
+                }
+              : null,
           child: const Text('Guardar'),
         ),
       ],
