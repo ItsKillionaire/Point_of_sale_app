@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pizzapopan_pos/models/custom_pizza.dart';
@@ -38,15 +37,28 @@ class OrderHistoryScreen extends StatelessWidget {
                     Text('Dirección: ${order.address}'),
                   if (order.isPickup)
                     const Text('Tipo: Pickup'),
-                  const Divider(),
+                  const Divider(thickness: 1.5),
                   ...order.items.map((item) {
-                    return ListTile(
-                      title: Text(item.product.name),
-                      subtitle: item.product is CustomPizza ? Text((item.product as CustomPizza).description) : null,
-                      trailing: Text('${item.quantity}'),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(item.product.name, overflow: TextOverflow.ellipsis, maxLines: 2),
+                                if (item.product is CustomPizza)
+                                  Text((item.product as CustomPizza).description, style: const TextStyle(fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          Text('${item.quantity}', style: const TextStyle(fontSize: 16)),
+                        ],
+                      ),
                     );
                   }).toList(),
-                  const Divider(),
+                  const Divider(thickness: 1.5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [

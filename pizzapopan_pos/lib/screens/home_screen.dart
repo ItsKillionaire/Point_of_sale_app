@@ -9,6 +9,7 @@ import 'package:pizzapopan_pos/providers/bill_provider.dart';
 import 'package:pizzapopan_pos/providers/menu_provider.dart';
 import 'package:pizzapopan_pos/providers/order_history_provider.dart';
 import 'package:pizzapopan_pos/screens/order_history_screen.dart';
+import 'package:pizzapopan_pos/widgets/custom_notification.dart';
 import 'package:pizzapopan_pos/widgets/ingredient_dialog.dart';
 import 'package:provider/provider.dart';
 
@@ -382,17 +383,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_address == null && !_isPickup) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Favor de agregar dirección'),
-                            backgroundColor: Colors.red,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
+                        showCustomNotification(context, 'Favor de agregar dirección', isError: true);
                         // TODO: Add flickering animation to the address button
                       } else if (billProvider.items.isNotEmpty) {
                         final order = Order(
-                          id: DateTime.now().toIso8601String(),
+                          id: orderHistoryProvider.getNextOrderId(),
                           items: billProvider.items.map((orderItem) {
                             return OrderItem(
                               product: orderItem.product,
@@ -412,14 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           _isPickup = false;
                         });
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Orden guardada e impresa (simulado).'),
-                            backgroundColor: Colors.green,
-                            behavior: SnackBarBehavior.floating,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                        showCustomNotification(context, 'Orden guardada e impresa (simulado).');
                       }
                     },
                     style: ElevatedButton.styleFrom(
