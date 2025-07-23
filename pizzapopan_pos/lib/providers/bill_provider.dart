@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:pizzapopan_pos/models/custom_pizza.dart';
 import 'package:pizzapopan_pos/models/order_item.dart';
 import 'package:pizzapopan_pos/models/product.dart';
 
@@ -13,12 +14,23 @@ class BillProvider with ChangeNotifier {
   }
 
   void addItem(Product product) {
-    final existingItemIndex = _items.indexWhere((item) => item.product.name == product.name);
+    if (product is CustomPizza) {
+      final existingItemIndex = _items.indexWhere(
+          (item) => item.product is CustomPizza && item.product == product);
 
-    if (existingItemIndex != -1) {
-      _items[existingItemIndex].increment();
+      if (existingItemIndex != -1) {
+        _items[existingItemIndex].increment();
+      } else {
+        _items.add(OrderItem(product: product));
+      }
     } else {
-      _items.add(OrderItem(product: product));
+      final existingItemIndex = _items.indexWhere((item) => item.product.name == product.name);
+
+      if (existingItemIndex != -1) {
+        _items[existingItemIndex].increment();
+      } else {
+        _items.add(OrderItem(product: product));
+      }
     }
 
     notifyListeners();

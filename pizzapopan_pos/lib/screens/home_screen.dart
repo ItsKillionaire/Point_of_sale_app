@@ -240,6 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: const Icon(Icons.history),
@@ -250,15 +251,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-              const Expanded(
-                child: Text(
-                  'Cuenta',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
+              const Text(
+                'Cuenta',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              // Empty SizedBox to balance the row if needed, or remove if not necessary
-              SizedBox(width: 48), // Adjust width to match IconButton's width
+              SizedBox(width: 48), // To balance the row with the IconButton
             ],
           ),
           Expanded(
@@ -301,10 +298,28 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.center,
-                    child: const Text('Dirección', textAlign: TextAlign.center, maxLines: 1),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final result = await showDialog<Map<String, dynamic>>(
+                        context: context,
+                        builder: (context) => const AddressDialog(),
+                      );
+                      if (result != null) {
+                        setState(() {
+                          _address = result['address'];
+                          _isPickup = result['isPickup'];
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: (_address != null || _isPickup) ? Colors.green : null,
+                      minimumSize: const Size.fromHeight(60), // Make button taller
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: const Text('Dirección', textAlign: TextAlign.center, maxLines: 1),
+                    ),
                   ),
                 ),
               ),
@@ -383,7 +398,7 @@ class _AddressDialogState extends State<AddressDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Dirección'),
+      contentPadding: const EdgeInsets.all(16.0),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -391,17 +406,21 @@ class _AddressDialogState extends State<AddressDialog> {
             controller: _addressController,
             decoration: const InputDecoration(
               labelText: 'Dirección',
+              border: OutlineInputBorder(),
             ),
             enabled: !_isPickup,
           ),
-          CheckboxListTile(
-            title: const Text('Pickup'),
-            value: _isPickup,
-            onChanged: (value) {
-              setState(() {
-                _isPickup = value!;
-              });
-            },
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: CheckboxListTile(
+              title: const Text('Pickup'),
+              value: _isPickup,
+              onChanged: (value) {
+                setState(() {
+                  _isPickup = value!;
+                });
+              },
+            ),
           ),
         ],
       ),

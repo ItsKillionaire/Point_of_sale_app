@@ -51,7 +51,7 @@ class OrderHistoryScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'Total: \${order.totalPrice.toStringAsFixed(2)}',
+                        'Total: ${order.totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
