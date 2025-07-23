@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   double _getFontSize(double baseSize) {
-    return baseSize.sp.clamp(14.0, 22.0);
+    return baseSize.sp.clamp(14.0, 30.0);
   }
 
   @override
@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ElevatedButton(
                       onPressed: () =>
                           setState(() => _selectedCategory = ProductCategory.boneless),
-                      child: Icon(Icons.fastfood, size: _getFontSize(30)),
+                      child: Text('🍗', style: TextStyle(fontSize: _getFontSize(30))),
                     ),
                   ),
                 ),
@@ -132,85 +132,102 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             // Menu items
             Expanded(
-              child: LayoutBuilder(builder: (context, constraints) {
-                final crossAxisCount = (constraints.maxWidth / menuProvider.itemSize).floor();
-                return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemCount: filteredItems.length,
-                  itemBuilder: (context, index) {
-                    final product = filteredItems[index];
-                    return GestureDetector(
-                      onTap: () async {
-                        if (product.name == 'Al gusto') {
-                          final selectedIngredients =
-                              await showDialog<List<Ingredient>>(
-                            context: context,
-                            builder: (context) => const IngredientDialog(),
-                          );
-                          if (selectedIngredients != null &&
-                              selectedIngredients.isNotEmpty) {
-                            final customPizza = CustomPizza(
-                              name: 'Al gusto',
-                              description: selectedIngredients
-                                  .map((i) => i.name)
-                                  .join(', '),
-                              price: product.price,
-                              image: product.image,
-                              category: product.category,
-                              ingredients: selectedIngredients,
-                            );
-                            Provider.of<BillProvider>(context, listen: false)
-                                .addItem(customPizza);
-                          }
-                        } else {
-                          Provider.of<BillProvider>(context, listen: false)
-                              .addItem(product);
-                        }
-                      },
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Image.asset(
-                                product.image,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(product.name,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                  style: TextStyle(fontSize: _getFontSize(16))),
-                            ),
-                            Text('\$${product.price.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                    fontSize: _getFontSize(16),
-                                    fontWeight: FontWeight.bold)),
-                          ],
-                        ),
+              child: Stack(
+                children: [
+                  LayoutBuilder(builder: (context, constraints) {
+                    final crossAxisCount = (constraints.maxWidth / menuProvider.itemSize).floor();
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount > 0 ? crossAxisCount : 1,
+                        childAspectRatio: 0.8,
                       ),
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        final product = filteredItems[index];
+                        return GestureDetector(
+                          onTap: () async {
+                            if (product.name == 'Al gusto') {
+                              final selectedIngredients =
+                                  await showDialog<List<Ingredient>>(
+                                context: context,
+                                builder: (context) => const IngredientDialog(),
+                              );
+                              if (selectedIngredients != null &&
+                                  selectedIngredients.isNotEmpty) {
+                                final customPizza = CustomPizza(
+                                  name: 'Al gusto',
+                                  description: selectedIngredients
+                                      .map((i) => i.name)
+                                      .join(', '),
+                                  price: product.price,
+                                  image: product.image,
+                                  category: product.category,
+                                  ingredients: selectedIngredients,
+                                );
+                                Provider.of<BillProvider>(context, listen: false)
+                                    .addItem(customPizza);
+                              }
+                            } else {
+                              Provider.of<BillProvider>(context, listen: false)
+                                  .addItem(product);
+                            }
+                          },
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: Image.asset(
+                                    product.image,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(product.name,
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                      style: TextStyle(fontSize: _getFontSize(16))),
+                                ),
+                                Text('\$${product.price.toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                        fontSize: _getFontSize(16),
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     );
-                  },
-                );
-              }),
-            ),
-            Slider(
-              value: menuProvider.itemSize,
-              min: 120,
-              max: 300,
-              onChanged: (double value) {
-                menuProvider.setItemSize(value);
-              },
+                  }),
+                  Positioned(
+                    bottom: 20,
+                    right: 20,
+                    child: Column(
+                      children: [
+                        FloatingActionButton(
+                          onPressed: () {
+                            menuProvider.setItemSize(menuProvider.itemSize + 10);
+                          },
+                          child: const Icon(Icons.add),
+                        ),
+                        const SizedBox(height: 10),
+                        FloatingActionButton(
+                          onPressed: () {
+                            menuProvider.setItemSize(menuProvider.itemSize - 10);
+                          },
+                          child: const Icon(Icons.remove),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -405,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         backgroundColor:
                             (_address != null || _isPickup) ? Colors.green : null,
                       ),
-                      child: Icon(Icons.delivery_dining, size: _getFontSize(30)),
+                      child: Icon(Icons.delivery_dining, size: _getFontSize(40)),
                     ),
                   ),
                 ),
@@ -448,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               context, 'Orden guardada e impresa (simulado).');
                         }
                       },
-                      child: Icon(Icons.print, size: _getFontSize(30)),
+                      child: Icon(Icons.print, size: _getFontSize(40)),
                     ),
                   ),
                 ),
