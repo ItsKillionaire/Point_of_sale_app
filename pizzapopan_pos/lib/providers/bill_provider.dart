@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:pizzapopan_pos/models/custom_pizza.dart';
 import 'package:pizzapopan_pos/models/order_item.dart';
@@ -11,6 +10,10 @@ class BillProvider with ChangeNotifier {
 
   double get totalPrice {
     return _items.fold(0.0, (sum, item) => sum + item.totalPrice);
+  }
+
+  int get totalItems {
+    return _items.fold(0, (sum, item) => sum + item.quantity);
   }
 
   void addItem(Product product) {

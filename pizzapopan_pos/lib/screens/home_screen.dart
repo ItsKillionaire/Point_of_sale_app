@@ -25,6 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _address;
   bool _isPickup = false;
 
+  
+
   @override
   void initState() {
     super.initState();
@@ -182,14 +184,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   final product = filteredItems[index];
                   return GestureDetector(
                     onTap: () async {
-                      if (product.name == 'Pizza al gusto') {
+                      if (product.name == 'Al gusto') {
                         final selectedIngredients = await showDialog<List<Ingredient>>(
                           context: context,
                           builder: (context) => const IngredientDialog(),
                         );
                         if (selectedIngredients != null && selectedIngredients.isNotEmpty) {
                           final customPizza = CustomPizza(
-                            name: 'Pizza al gusto',
+                            name: 'Al gusto',
                             description: selectedIngredients.map((i) => i.name).join(', '),
                             price: product.price,
                             image: product.image,
@@ -218,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(4.0),
-                            child: Text(product.name, textAlign: TextAlign.center),
+                            child: Text(product.name, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, maxLines: 2),
                           ),
                           Text('\$${product.price.toStringAsFixed(2)}'),
                         ],
@@ -259,17 +261,51 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           Expanded(
-            child: ListView.builder(
+            child: ListView.separated(
               itemCount: billProvider.items.length,
+              separatorBuilder: (context, index) => const Divider(),
               itemBuilder: (context, index) {
                 final item = billProvider.items[index];
                 return GestureDetector(
                   onTap: () => billProvider.removeItem(item),
                   onLongPress: () => billProvider.removeItemCompletely(item),
-                  child: ListTile(
-                    title: Text(item.product.name),
-                    subtitle: item.product is CustomPizza ? Text((item.product as CustomPizza).description) : null,
-                    trailing: Text('${item.quantity} x \$${item.product.price.toStringAsFixed(2)}'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(item.product.name, overflow: TextOverflow.ellipsis, maxLines: 2),
+                              if (item.product is CustomPizza)
+                                Text((item.product as CustomPizza).description, style: const TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          width: 100, // Adjust width as needed
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: '${item.quantity}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: _getQuantityColor(item.quantity),
+                                    ),
+                                  ),
+                                  const TextSpan(text: ' x '),
+                                  TextSpan(text: '\$${item.totalPrice.toStringAsFixed(2)}'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -278,16 +314,33 @@ class _HomeScreenState extends State<HomeScreen> {
           const Divider(),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                const Text(
-                  'Total',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Artículos:',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    Text(
+                      '${billProvider.totalItems}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
                 ),
-                Text(
-                  '\$${billProvider.totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total:',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '\$${billProvider.totalPrice.toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -381,6 +434,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Color _getQuantityColor(int quantity) {
+    if (quantity <= 1) {
+      return Colors.black;
+    } else if (quantity <= 3) {
+      return Colors.green;
+    } else if (quantity <= 5) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
   }
 }
 

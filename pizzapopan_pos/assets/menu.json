@@ -1,7 +1,7 @@
 {
   "pizzas": [
     {
-      "name": "Pizza al gusto",
+      "name": "Al gusto",
       "description": "Personaliza tu pizza con cualquiera de nuestros 8 ingredientes.",
       "image": "assets/images/pizzas/pizza_al_gusto.webp"
     },
